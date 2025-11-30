@@ -1,0 +1,29 @@
+.intensity-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.intensity-chill {
+  background: rgba(6, 182, 212, 0.2);
+  color: #06B6D4;
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.intensity-normal {
+  background: rgba(124, 58, 237, 0.2);
+  color: #7C3AED;
+  border-color: rgba(124, 58, 237, 0.4);
+}
+
+.intensity-hardcore {
+  background: rgba(251, 191, 36, 0.2);
+  color: #FBBF24;
+  border-color: rgba(251, 191, 36, 0.4);
+}

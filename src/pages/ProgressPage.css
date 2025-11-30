@@ -1,0 +1,205 @@
+.progress-page {
+  min-height: calc(100vh - 80px);
+  padding: 2rem;
+}
+
+.progress-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.streak-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.title-badge-section {
+  margin-bottom: 3rem;
+}
+
+.title-badge-section h2 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.title-badge-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.title-badge-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.title-badge-name {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #FBBF24;
+  margin-bottom: 0.5rem;
+}
+
+.title-badge-desc {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+}
+
+.recent-completions h2 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.empty-state p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+.completions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.completion-item {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.completion-item:hover {
+  transform: translateX(4px);
+}
+
+.completion-text {
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.completion-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.completion-xp {
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.completion-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .progress-page {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem;
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+
+  .title-badge-card {
+    padding: 1.5rem;
+  }
+
+  .title-badge-icon {
+    font-size: 2.5rem;
+  }
+
+  .title-badge-name {
+    font-size: 1.5rem;
+  }
+
+  .completion-item {
+    padding: 1rem;
+  }
+
+  .completion-meta {
+    gap: 0.5rem;
+  }
+}
+
+.your-challenges-section {
+  margin-top: 3rem;
+}
+
+.your-challenges-section h2 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
