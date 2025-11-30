@@ -17,12 +17,13 @@ function ChallengePage() {
   const [formData, setFormData] = useState({
     taskText: '',
     intensity: 'normal',
-    durationMinutes: 20, // Default for normal
     targetType: 'today',
     customDate: '',
     recurrence: 'once',
     scheduleTime: '',
     useTimer: false,
+    customTimerDuration: null,
+    timerUnit: 'minutes',
     notes: ''
   });
 
@@ -39,20 +40,10 @@ function ChallengePage() {
     const { name, value, type, checked } = e.target;
     let newValue = type === 'checkbox' ? checked : value;
     
-    // Handle intensity change - update default duration
-    if (name === 'intensity') {
-      const defaultDuration = getTimerDuration(value);
-      setFormData(prev => ({
-        ...prev,
-        intensity: value,
-        durationMinutes: defaultDuration
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: newValue
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: newValue
+    }));
     
     // Clear error for this field
     if (errors[name]) {
@@ -71,12 +62,6 @@ function ChallengePage() {
     // Validate intensity
     if (!['chill', 'normal', 'hardcore'].includes(formData.intensity)) {
       newErrors.intensity = 'Invalid intensity level';
-    }
-
-    // Validate duration
-    const duration = parseInt(formData.durationMinutes);
-    if (isNaN(duration) || duration <= 0) {
-      newErrors.durationMinutes = 'Duration must be a positive number';
     }
 
     // Validate target type
@@ -122,12 +107,25 @@ function ChallengePage() {
       ? formData.customDate 
       : getTargetDate(formData.targetType);
 
+    // Convert timer duration to minutes based on unit
+    let timerDurationInMinutes = getTimerDuration(formData.intensity);
+    if (formData.useTimer && formData.customTimerDuration) {
+      const duration = parseInt(formData.customTimerDuration);
+      if (formData.timerUnit === 'seconds') {
+        timerDurationInMinutes = duration / 60;
+      } else if (formData.timerUnit === 'minutes') {
+        timerDurationInMinutes = duration;
+      } else if (formData.timerUnit === 'hours') {
+        timerDurationInMinutes = duration * 60;
+      }
+    }
+
     // Create challenge object with new format
     const newChallenge = {
       id,
       taskText: formData.taskText.trim(),
       intensity: formData.intensity,
-      durationMinutes: parseInt(formData.durationMinutes),
+      customTimerDuration: timerDurationInMinutes,
       targetType: formData.targetType,
       targetDateISO: targetDateISO,
       customDateISO: formData.targetType === 'custom_date' ? formData.customDate : null,
@@ -156,15 +154,46 @@ function ChallengePage() {
     setFormData({
       taskText: '',
       intensity: 'normal',
-      durationMinutes: 20,
       targetType: 'today',
       customDate: '',
       recurrence: 'once',
       scheduleTime: '',
       useTimer: false,
+      customTimerDuration: null,
+      timerUnit: 'minutes',
       notes: ''
     });
   };
+
+  // Check if challenge should be ongoing based on schedule time
+  const isScheduledTimeReached = (challenge) => {
+    if (!challenge.scheduleTime) return false;
+    
+    const now = new Date();
+    const [hours, minutes] = challenge.scheduleTime.split(':').map(Number);
+    const scheduledTime = new Date();
+    scheduledTime.setHours(hours, minutes, 0, 0);
+    
+    return now >= scheduledTime;
+  };
+
+  // Update challenge status based on schedule time
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const updatedChallenges = pendingChallenges.map(challenge => {
+        if (challenge.status === 'pending' && isScheduledTimeReached(challenge)) {
+          return { ...challenge, status: 'ongoing' };
+        }
+        return challenge;
+      });
+      
+      if (JSON.stringify(updatedChallenges) !== JSON.stringify(pendingChallenges)) {
+        setPendingChallenges(updatedChallenges);
+      }
+    }, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [pendingChallenges, setPendingChallenges]);
 
   const handlePendingChallengeClick = (challenge) => {
     setSelectedChallenge(challenge);
@@ -237,23 +266,13 @@ function ChallengePage() {
   };
 
   const handleTaskNotCompleted = (challenge) => {
-    // Calculate current streak
-    const currentStreak = calculateStreak(completions);
+    // Calculate XP that would have been earned
+    const xpLost = calculateXP(challenge.intensity);
     
-    // Deduct streak by removing the most recent completion if streak > 0
-    if (currentStreak > 0 && completions.length > 0) {
-      // Remove the most recent completion to break the streak
-      const sortedCompletions = [...completions].sort((a, b) => 
-        new Date(b.completedAt) - new Date(a.completedAt)
-      );
-      const updatedCompletions = completions.filter(c => c.id !== sortedCompletions[0].id);
-      setCompletions(updatedCompletions);
-    }
-    
-    // Show notification
+    // Show notification about XP deduction
     const notif = {
       id: `notif-${Date.now()}`,
-      message: '❌ Task not completed. Streak deducted by 1.',
+      message: `❌ Task not completed. -${xpLost} XP deducted.`,
       type: 'error',
       timestamp: getISOTimestamp()
     };
@@ -316,21 +335,6 @@ function ChallengePage() {
               <option value="hardcore">🔥 Hardcore</option>
             </select>
             {errors.intensity && <span className="error-message">{errors.intensity}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="durationMinutes">Duration (minutes)</label>
-            <input
-              type="number"
-              id="durationMinutes"
-              name="durationMinutes"
-              value={formData.durationMinutes}
-              onChange={handleChange}
-              min="1"
-              placeholder="Enter duration in minutes"
-              className={errors.durationMinutes ? 'error' : ''}
-            />
-            {errors.durationMinutes && <span className="error-message">{errors.durationMinutes}</span>}
           </div>
 
           <div className="form-group">
@@ -410,6 +414,36 @@ function ChallengePage() {
             </label>
           </div>
 
+          {formData.useTimer && (
+            <>
+              <div className="form-group">
+                <label htmlFor="customTimerDuration">Timer Duration</label>
+                <div className="timer-duration-input">
+                  <input
+                    type="number"
+                    id="customTimerDuration"
+                    name="customTimerDuration"
+                    value={formData.customTimerDuration || getTimerDuration(formData.intensity)}
+                    onChange={handleChange}
+                    min="1"
+                    placeholder="Enter duration"
+                  />
+                  <select
+                    name="timerUnit"
+                    value={formData.timerUnit}
+                    onChange={handleChange}
+                    className="timer-unit-select"
+                  >
+                    <option value="seconds">Seconds</option>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                  </select>
+                </div>
+                <small className="field-hint">Default: Chill (10min), Normal (20min), Hardcore (30min)</small>
+              </div>
+            </>
+          )}
+
           <div className="form-group">
             <label htmlFor="notes">Notes (optional)</label>
             <textarea
@@ -441,7 +475,7 @@ function ChallengePage() {
 
                 {activeChallenge.useTimer && !showTimerModal && (
                   <Timer 
-                    durationMinutes={activeChallenge.durationMinutes || 20}
+                    durationMinutes={activeChallenge.customTimerDuration || activeChallenge.durationMinutes || 20}
                     taskId={activeChallenge.id}
                     onFinish={handleTimerComplete}
                   />
@@ -493,12 +527,12 @@ function ChallengePage() {
                   {activeChallenge.intensity}
                 </span>
                 <span className="duration-info">
-                  {activeChallenge.durationMinutes || 20} minutes
+                  {activeChallenge.customTimerDuration || activeChallenge.durationMinutes || 20} minutes
                 </span>
               </div>
               
               <Timer 
-                durationMinutes={activeChallenge.durationMinutes || 20}
+                durationMinutes={activeChallenge.customTimerDuration || activeChallenge.durationMinutes || 20}
                 taskId={activeChallenge.id}
                 onFinish={handleTimerComplete}
               />

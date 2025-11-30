@@ -104,6 +104,15 @@ function ActionModal({
                 </span>
               </div>
               
+              {challenge.useTimer && challenge.customTimerDuration && (
+                <div className="detail-row">
+                  <span className="detail-label">Timer Duration:</span>
+                  <span className="detail-value">
+                    {challenge.customTimerDuration} minutes
+                  </span>
+                </div>
+              )}
+              
               <div className="detail-row">
                 <span className="detail-label">Target:</span>
                 <span className="detail-value">
